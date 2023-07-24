@@ -27,6 +27,14 @@ sl_less, div_less = short_list(10000,tun=1.5)
 sl_more, div_more = short_list(10000,tun=2.5)
 ```
 
+If you would like to choose targets based on systems instead of individual planets, use the systems keyword:
+
+```python
+from pandora-target-diversity import short_list
+sl_systems, div_systems = short_list(10000,systems=True)
+```
+Note: in benchmark testing, this was around 24 times slower than the default. 
+
 ### Changing Considered Parameters
 
 By default the package calculates diversity in stellar radius ('st_rad'), stellar effective temperature ('st_teff'), stellar rotation period ('st_rotp'), planetary orbital period ('pl_orbper'), and planetary density ('pl_dens'). If you wish to consider different parameters, please fork the repository with an appropriate name to your project as some code needs to be changed within utils.py. As an example, consider removing stellar effective temperature and planetary orbital period and adding planetary eqilibrium temperature ('pl_eqt'). As the diversity calculations are hard coded for each parameter set for speed considerations, we now need to change the main body of the calc_dis function as well as specify a new params variable. Assume for the example that params now looks like:
@@ -126,3 +134,5 @@ from pandora-target-diversity import short_list
 params_new=['st_rad','st_teff','pl_dens','pl_eqt']
 sl_new, div_new = short_list(10000, params=params_new)
 ```
+
+If you are using systems=True, the changes are similar, but be careful to put the stellar and planetary parameters in the place of or next to the current defaults in those categories. 
