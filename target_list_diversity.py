@@ -15,7 +15,16 @@ params=['st_rad','st_teff','st_rotp','pl_orbper','pl_dens']
 def mp_doit(ins):
     
     test_set=utils.get_list(ins[-1],target_list)
-    test_dis=utils.calc_dis(test_set,ins[:-1],target_list)
+    it_arr,dis_arr=utils.calc_dis(target_list.loc[test_set],ins[:-1],systems=False)
+    test_dis=np.average(dis_arr)
+    
+    return [test_set, test_dis]
+
+def mp_doit_systems(ins):
+    
+    test_set=utils.get_list(ins[-1],target_list,systems=True)
+    it_arr,dis_arr=utils.calc_dis(target_list.loc[test_set],ins[:-1],systems=True)
+    test_dis=np.average(np.hstack(dis_arr))
     
     return [test_set, test_dis]
 
@@ -23,7 +32,8 @@ def short_list(n: int,
                t: int = 20,
                tun: float = 2.0,
                target_list: pd.DataFrame = target_list,
-               params: list = params
+               params: list = params,
+               systems: bool = False
                ):
     """ Creates a short list based on target diversity in a set of parameters.
         
@@ -43,6 +53,9 @@ def short_list(n: int,
     params:         list
                     A list of the parameters to be considered. Each one should be a string
                     that corresponds to a column in target_list
+    systems:        bool
+                    Toggle whether to consider the target list from a system perspective
+                    (True) or from an individual target perspective (False; default)
     Returns
     -------
     pandas.DataFrame
@@ -55,7 +68,10 @@ def short_list(n: int,
     ins.append(t)
     
     p=mp.Pool(mp.cpu_count())
-    res=p.map_async(mp_doit, np.ones((n,len(ins)))*ins)
+    if systems:
+        res=p.map_async(mp_doit_systems, np.ones((n,len(ins)))*ins)
+    else:
+        res=p.map_async(mp_doit, np.ones((n,len(ins)))*ins)
     results=[r for r in res.get()]
     diss=[r[1] for r in results]
     final=results[np.where(diss==np.max(diss))[0][0]]
